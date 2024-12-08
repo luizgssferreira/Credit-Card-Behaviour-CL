@@ -8,7 +8,10 @@ This project is based on a real-world dataset containing detailed information fr
 
 Key objectives include:
 
-Creating enriched customer profiles by deriving new Key Performance Indicators (KPIs) from the dataset.
-Segmenting customers into distinct groups based on their credit card usage behaviors.
-Identifying and interpreting the defining characteristics of each cluster.
-Delivering actionable insights and recommendations for targeted marketing efforts.
+* Creating enriched customer profiles by deriving new Key Performance Indicators (KPIs) from the dataset.
+  
+* Segmenting customers into distinct groups based on their credit card usage behaviors.
+
+* Identifying and interpreting the defining characteristics of each cluster.
+  
+* Delivering actionable insights and recommendations for targeted marketing efforts.
