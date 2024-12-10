@@ -362,9 +362,8 @@ Overall, the loadings suggest that **PC_1** and **PC_4** are heavily influenced 
 **PC_7** is primarily defined by **Pay_to_MinimumPay**.
 
 ## Machine Learning Clustering
-In this section, we will explore the clustering model used in our analysis. We will review key insights from EDA, including important KPIs and findings from the PCA. 
 
-We will implement two clustering algorithms: **K-means** and **Hierarchical Clustering**, and determine the optimal number of clusters by comparing **silhouette scores** across different cluster numbers. Additionally, we will perform profiling on the resulting clusters to ensure meaningful segmentation.
+In this section, we will explore the clustering model used in our analysis. We will review key insights from EDA, including important KPIs and findings from the PCA. We will implement two clustering algorithms: **K-means** and **Hierarchical Clustering**, and determine the optimal number of clusters by comparing **silhouette scores** across different cluster numbers. Additionally, we will perform profiling on the resulting clusters to ensure meaningful segmentation.
 
 The main objectives of this section are:
 - Segment customers into distinct groups based on their credit card usage behaviors.
@@ -375,8 +374,7 @@ The main objectives of this section are:
 
 The cophenetic distance correlation coefficient is a valuable metric in evaluating the accuracy of different linkage methods in hierarchical clustering. For our Agglomerative Clustering algorithm, this coefficient helps us determine which linkage method best preserves the original pairwise distances in the dataset.
 
-For this i made this small function, that will take the output from our PCA and calculate the cophenetic correlation coefficient for various linkages and distance metrics.
-
+To achieve this, I created the following function, which takes the output from our PCA and calculates the cophenetic correlation coefficient for various linkage methods and distance metrics:
 
 ```python
 def calculate_cophenetic_distances(pca_data, linkage_methods, distance_metrics):
@@ -432,48 +430,41 @@ Based on the output of our analysis, the **Average Linkage Method** combined wit
 
 ### Finding optimal number of clusters for K-means and Agglomerative Clustering
 
-'find_optimal_clusters' will take our PCA dataframe and a cluster range and compute these metrics for Agglomerative Clustering and K-means:
+The `find_optimal_clusters` function takes our PCA dataframe and a cluster range to compute the following metrics for both Agglomerative Clustering and K-means:
+
 - Inertia (WCSS)
 - Silhouette Score
 
-Number of Clusters: 3
-K-Means Inertia (WCSS): 99397.8355487756
-Silhouette Score for K-Means: 0.2980
-Silhouette Score for Agglomerative Clustering: 0.8689
+| Number of Clusters | K-Means Inertia (WCSS) | Silhouette Score for K-Means | Silhouette Score for Agglomerative Clustering |
+|--------------------|------------------------|-----------------------------|-----------------------------------------------|
+| 3                  | 99397.8355487756       | 0.2980                      | 0.8689                                        |
+| 4                  | 84676.22005514555      | 0.2516                      | 0.8205                                        |
+| 5                  | 75906.79619660013      | 0.2444                      | 0.8200                                        |
 
-Number of Clusters: 4
-K-Means Inertia (WCSS): 84676.22005514555
-Silhouette Score for K-Means: 0.2516
-Silhouette Score for Agglomerative Clustering: 0.8205
+While selecting 3 clusters provides the best performance, we want to explore the 4 and 5-cluster configurations in more detail. These higher cluster counts may reveal patterns that are overlooked in smaller cluster sizes.
 
-Number of Clusters: 5
-K-Means Inertia (WCSS): 75906.79619660013
-Silhouette Score for K-Means: 0.2444
-Silhouette Score for Agglomerative Clustering: 0.8200
-
-Besides the better perfomance of selecting 3 clusters, i want to explore more on 4 and 5, i want to see some more delailed segmentation and try to capture some different patters that might be overlookeed by a smaller cluster size. 
-
-By using elbow and sillhouete plot we see that indeed 4 and 5 are less cohesive, lets explore this by plotting the agglomerative clustering dendogram.
+Through the elbow and silhouette plots, we observe that 4 and 5 clusters are less cohesive. However, the dendrogram below helps us confirm the viability of retaining 4 clusters.
 
 ![dendogram](results/ML_results/figures/dendrogram_plot.png)
 
-The dendogram show that inded by using the best distance compute, we have arguments to retain 4 clusters, lets visualize these against 5 clusters.
+The dendrogram suggests that using the best distance metric, 4 clusters are a reasonable choice. Let’s visualize the results for both 4 and 5 clusters.
 
-##### Selecting for 4 Clusters
+#### Selecting for 4 Clusters
 
 ![4CL](results/ML_results/figures/kmeans_clusters4_plot.png)
 
-##### Selecting for 5 Clusters
+#### Selecting for 5 Clusters
 
 ![5CL](results/ML_results/figures/kmeans_clusters5_plot.png)
 
-By visualy inspecting the plots of all PCA components and their clusters we see that by selecting for 5 we are capturing some more of the scatter (pink dots) data then with 4.
+By visually inspecting the plots of all PCA components and their respective clusters, we observe that selecting 5 clusters captures more of the scattered data (represented by pink dots) than 4 clusters.
 
-Lets explore more of this pattern using Segment Distribution Analysis 
+Let’s explore this pattern further using **Segment Distribution Analysis**.
 
 ### Segment Distribution Analysis
-Segment distribution will repturn to us the proportion of data points assigned to each cluster in our cluster analysis
-'calculate_segment_distribution' function should callculate the segment distribution for each cluster for a specified cluster size.
+
+The `calculate_segment_distribution` function computes the proportion of data points assigned to each cluster for a specified cluster size. Here are the segment distributions for K=4 and K=5:
+
 
 
 ```python
@@ -502,11 +493,10 @@ def calculate_segment_distribution(updated_df, target_clusters):
 For K=4 
 
 Segment Distribution for cluster K=4:
- 0    0.455917
-1    0.126718
-2    0.028383
-3    0.388982
-Name: Cluster_4, dtype: float64
+     0.455917
+     0.126718
+    0.028383
+    0.388982
 
 Cluster 0 contains 45.59% of the total data points.
 Cluster 1 contains 12.67% of the total data points.
@@ -516,12 +506,12 @@ Cluster 3 contains 38.90% of the total data points.
 For K=5
 
 Segment Distribution for cluster K=5:
- 0    0.119902
-1    0.362946
-2    0.087161
-3    0.003352
-4    0.426640
-Name: Cluster_5, dtype: float64
+   0.119902
+  0.362946
+     0.087161
+   0.003352
+    0.426640
+
 
 Cluster 0 contains 11.99% of the total data points.
 Cluster 1 contains 36.29% of the total data points.
@@ -533,132 +523,111 @@ We will follow this analysis using profiling to try to differentiate better the 
 
 ### Profiling Process
 
+The goal of profiling is to differentiate between groups (clusters) based on distinct characteristics. An ideal cluster should represent a group of observations with unique traits that distinguish it from other clusters.
 
-The goal of Profiling is to differentiate between groups (clusters) based on distinct characteristics. An ideal cluster should represent a group of observations with unique traits that distinguish them from other clusters.
+The profiling process follows these steps:
 
-The profilling will follow these steps: 
-
-1. **Count the number of observations per segment (value_counts)**:
+1. **Count the number of observations per segment**: 
     - For each cluster, calculate how many observations (or records) are present. This gives the size of each cluster.
 
 2. **Calculate the average for each variable**:
     - **Overall average**: Compute the average of each variable across the entire dataset.
     - **Segment-wise average**: Compute the average of each variable for each cluster (segment). This helps identify how clusters differ from the overall dataset.
 
-3. **Repeat the above steps for different cluster values (K)**:
+3. **Repeat the above steps for different cluster values (K)**: 
     - Apply the same steps for each K value (different numbers of clusters) to determine which clustering solution provides the most distinct and meaningful segmentation of the data.
 
-By following these steps, the best clustering solution can be identified, allowing for effective segmentation and better differentiation between clusters.
+By following these steps, we can identify the best clustering solution, allowing for effective segmentation and better differentiation between clusters.
 
 This is what we achieve after the steps 
 
-| **Segment** | **K4 Cluster 1** | **K4 Cluster 2** | **K4 Cluster 3** | **K4 Cluster 4** | **K5 Cluster 1** | **K5 Cluster 2** | **K5 Cluster 3** | **K5 Cluster 4** | **K5 Cluster 5** | **Overall** |
-|-------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|------------------|-------------|
-| **Seg_size** | 4080.000000 | 1134.000000 | 254.000000 | 3481.000000 | 1073.000000 | 3248.000000 | 780.000000 | 30.000000 | 3818.000000 | 8949.000000 |
-| **Seg_Pct** | 0.455917 | 0.126718 | 0.028383 | 0.388982 | 0.119902 | 0.362946 | 0.087161 | 0.003352 | 0.426640 | 1.000000 |
-| **Installment_Purchases** | 0.180637 | 0.103175 | 0.035433 | 0.401321 | 0.105312 | 0.497537 | 0.023077 | 0.066667 | 0.133840 | 0.252542 |
-| **None_Of_the_Purchases** | 0.375490 | 0.448854 | 0.000000 | 0.000000 | 0.449208 | 0.000000 | 0.000000 | 0.000000 | 0.408329 | 0.228070 |
-| **One_Of_Purchase** | 0.327451 | 0.211640 | 0.098425 | 0.078426 | 0.208760 | 0.069273 | 0.094872 | 0.100000 | 0.353064 | 0.209409 |
-| **BALANCE** | 1106.624986 | 4542.902787 | 4046.210995 | 950.190178 | 4585.833917 | 668.038082 | 2646.309946 | 5567.142164 | 1225.905658 | 1564.647593 |
-| **BALANCE_FREQUENCY** | 0.801298 | 0.961876 | 0.984082 | 0.931165 | 0.960927 | 0.892737 | 0.982140 | 0.957273 | 0.818736 | 0.877350 |
-| **PURCHASES** | 268.213414 | 541.627628 | 9765.340236 | 1375.975404 | 510.233840 | 920.741438 | 4720.194897 | 24957.905000 | 264.574382 | 1003.316936 |
-| **ONEOFF_PURCHASES** | 209.217733 | 343.399594 | 6673.724370 | 679.162594 | 318.277987 | 358.283787 | 3075.924603 | 18186.875667 | 223.223937 | 592.503572 |
-| **INSTALLMENTS_PURCHASES** | 59.329130 | 198.317690 | 3091.615866 | 697.164573 | 192.050606 | 562.803030 | 1645.039526 | 6771.029333 | 41.576524 | 411.113579 |
-| **CASH_ADVANCE** | 585.817361 | 4860.109536 | 637.624213 | 200.302788 | 5003.391108 | 157.746907 | 439.394980 | 1858.844605 | 649.873119 | 978.959616 |
-| **PURCHASES_FREQUENCY** | 0.178564 | 0.295700 | 0.936883 | 0.886757 | 0.294823 | 0.835306 | 0.940305 | 0.910556 | 0.156748 | 0.490405 |
-| **ONEOFF_PURCHASES_FREQUENCY** | 0.090526 | 0.146485 | 0.761531 | 0.311149 | 0.140819 | 0.217872 | 0.712005 | 0.773889 | 0.098132 | 0.202480 |
-| **PURCHASES_INSTALLMENTS_FREQUENCY** | 0.085359 | 0.190750 | 0.761411 | 0.719259 | 0.190818 | 0.689006 | 0.735534 | 0.754444 | 0.058335 | 0.364478 |
-| **CASH_ADVANCE_FREQUENCY** | 0.121176 | 0.488064 | 0.066929 | 0.041515 | 0.491533 | 0.035089 | 0.065122 | 0.083333 | 0.134807 | 0.135141 |
-| **CASH_ADVANCE_TRX** | 2.269853 | 14.668430 | 1.901575 | 0.775065 | 14.940354 | 0.646860 | 1.457692 | 3.666667 | 2.539811 | 3.249078 |
-| **PURCHASES_TRX** | 3.068382 | 8.252205 | 99.570866 | 24.270325 | 7.931034 | 17.935961 | 63.430769 | 148.000000 | 2.873494 | 14.711476 |
-| **CREDIT_LIMIT** | 3291.949346 | 7511.071028 | 10427.362205 | 4488.241957 | 7568.550369 | 3857.143961 | 8246.987179 | 15570.000000 | 3319.020430 | 4494.449450 |
-| **PAYMENTS** | 954.168270 | 3754.745798 | 9022.795872 | 1456.176389 | 3807.870653 | 1056.474880 | 4433.834686 | 25178.882690 | 990.203059 | 1733.336511 |
-| **MINIMUM_PAYMENTS** | 644.082143 | 1895.101032 | 2293.372330 | 632.725874 | 1928.053101 | 505.118404 | 1391.490714 | 3475.059479 | 697.458083 | 845.003358 |
-| **PRC_FULL_PAYMENT** | 0.069020 | 0.040946 | 0.310001 | 0.278360 | 0.041244 | 0.286041 | 0.275032 | 0.478409 | 0.045456 | 0.153732 |
-| **TENURE** | 11.456127 | 11.302469 | 11.940945 | 11.629704 | 11.296365 | 11.563116 | 11.912821 | 11.933333 | 11.457831 | 11.517935 |
-| **MONTHLY_AVG_PURCHASES** | 23.918537 | 48.708372 | 820.291078 | 117.808371 | 46.138778 | 79.635722 | 397.479664 | 2094.593383 | 23.633348 | 86.184802 |
-| **AVG_CASH_ADVANCE** | 53.642893 | 442.961347 | 55.609205 | 17.528269 | 456.246036 | 14.196478 | 37.619720 | 154.903717 | 59.368560 | 88.984447 |
-| **Limit_Usage** | 0.424776 | 0.633578 | 0.396603 | 0.266648 | 0.632107 | 0.238067 | 0.338388 | 0.391508 | 0.459225 | 0.388926 |
-| **Pay_to_MinimumPay** | 8.196323 | 5.413539 | 16.183057 | 10.740687 | 5.525342 | 11.732130 | 12.210327 | 25.218608 | 7.009826 | 9.060094 |
+| Variable                         | K=4 Cluster 1 | K=4 Cluster 2 | K=4 Cluster 3 | K=4 Cluster 4 | K=5 Cluster 1 | K=5 Cluster 2 | K=5 Cluster 3 | K=5 Cluster 4 | K=5 Cluster 5 | Overall  |
+|-----------------------------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|---------------|----------|
+| Seg_size                          | 4080.00       | 1134.00       | 254.00        | 3481.00       | 1073.00       | 3248.00       | 780.00        | 30.00         | 3818.00       | 8949.00  |
+| Seg_Pct                           | 0.46          | 0.13          | 0.03          | 0.39          | 0.12          | 0.36          | 0.09          | 0.00          | 0.43          | 1.00     |
+| Installment_Purchases             | 0.18          | 0.10          | 0.04          | 0.40          | 0.11          | 0.50          | 0.02          | 0.07          | 0.13          | 0.25     |
+| None_Of_the_Purchases             | 0.38          | 0.45          | 0.00          | 0.00          | 0.45          | 0.00          | 0.00          | 0.00          | 0.41          | 0.23     |
+| One_Of_Purchase                   | 0.33          | 0.21          | 0.10          | 0.08          | 0.21          | 0.07          | 0.09          | 0.10          | 0.35          | 0.21     |
+| BALANCE                           | 1106.62       | 4542.90       | 4046.21       | 950.19        | 4585.83       | 668.04        | 2646.31       | 5567.14       | 1225.91       | 1564.65  |
+| BALANCE_FREQUENCY                 | 0.80          | 0.96          | 0.98          | 0.93          | 0.96          | 0.89          | 0.98          | 0.96          | 0.82          | 0.88     |
+| PURCHASES                         | 268.21        | 541.63        | 9765.34       | 1375.98       | 510.23        | 920.74        | 4720.19       | 24957.91      | 264.57        | 1003.32  |
+| ONEOFF_PURCHASES                  | 209.22        | 343.40        | 6673.72       | 679.16        | 318.28        | 358.28        | 3075.92       | 18186.88      | 223.22        | 592.50   |
+| INSTALLMENTS_PURCHASES            | 59.33         | 198.32        | 3091.62       | 697.16        | 192.05        | 562.80        | 1645.04       | 6771.03       | 41.58         | 411.11   |
+| CASH_ADVANCE                       | 585.82        | 4860.11       | 637.62        | 200.30        | 5003.39       | 157.75        | 439.39        | 1858.84       | 649.87        | 978.96   |
+| PURCHASES_FREQUENCY               | 0.18          | 0.30          | 0.94          | 0.89          | 0.29          | 0.84          | 0.94          | 0.91          | 0.16          | 0.49     |
+| ONEOFF_PURCHASES_FREQUENCY        | 0.09          | 0.15          | 0.76          | 0.31          | 0.14          | 0.22          | 0.71          | 0.77          | 0.10          | 0.20     |
+| PURCHASES_INSTALLMENTS_FREQUENCY  | 0.09          | 0.19          | 0.76          | 0.72          | 0.19          | 0.69          | 0.74          | 0.75          | 0.06          | 0.36     |
+| CASH_ADVANCE_FREQUENCY            | 0.12          | 0.49          | 0.07          | 0.04          | 0.49          | 0.04          | 0.07          | 0.08          | 0.13          | 0.14     |
+| CASH_ADVANCE_TRX                  | 2.27          | 14.67         | 1.90          | 0.78          | 14.94         | 0.65          | 1.46          | 3.67          | 2.54          | 3.25     |
+| PURCHASES_TRX                     | 3.07          | 8.25          | 99.57         | 24.27         | 7.93          | 17.94         | 63.43         | 148.00        | 2.87          | 14.71    |
+| CREDIT_LIMIT                       | 3291.95       | 7511.07       | 10427.36      | 4488.24       | 7568.55       | 3857.14       | 8246.99       | 15570.00      | 3319.02       | 4494.45  |
+| PAYMENTS                          | 954.17        | 3754.75       | 9022.80       | 1456.18       | 3807.87       | 1056.47       | 4433.83       | 25178.88      | 990.20        | 1733.34  |
+| MINIMUM_PAYMENTS                  | 644.08        | 1895.10       | 2293.37       | 632.73        | 1928.05       | 505.12        | 1391.49       | 3475.06       | 697.46        | 845.00   |
+| PRC_FULL_PAYMENT                  | 0.07          | 0.04          | 0.31          | 0.28          | 0.04          | 0.29          | 0.28          | 0.48          | 0.05          | 0.15     |
+| TENURE                            | 11.46         | 11.30         | 11.94         | 11.63         | 11.30         | 11.56         | 11.91         | 11.93         | 11.46         | 11.52    |
+| MONTHLY_AVG_PURCHASES             | 23.92         | 48.71         | 820.29        | 117.81        | 46.14         | 79.64         | 397.48        | 2094.59       | 23.63         | 86.18    |
+| AVG_CASH_ADVANCE                  | 53.64         | 442.96        | 55.61         | 17.53         | 456.25        | 14.20         | 37.62         | 154.90        | 59.37         | 88.98    |
+| Limit_Usage                       | 0.42          | 0.63          | 0.40          | 0.27          | 0.63          | 0.24          | 0.34          | 0.39          | 0.46          | 0.39     |
+| Pay_to_MinimumPay                 | 8.20          | 5.41          | 16.18         | 10.74         | 5.53          | 11.73         | 12.21         | 25.22         | 7.01          | 9.06     |
 
+## Conclusion
 
+### Cluster Categorization
 
-###  Cluster Categorization
+#### Insights on Choosing 5 Clusters
+The decision to categorize the customer segments into 5 clusters instead of 4 comes from the need to capture more detailed customer behaviors. Here are the key insights that justify this choice:
 
-### Insights on Choosing 5 Clusters
+- **Diverse Spending Behavior**: The additional cluster provides a finer distinction, especially between customers who spend at medium levels and those just starting their engagement. This allows for targeted marketing that considers these behavioral nuances.
+  
+- **Identification of Risk**: The creation of a dedicated Risk segment better identifies customers with low engagement. This group can benefit from specialized re-engagement strategies that wouldn't be as effective if grouped with more active clusters.
 
-The decision to categorize the customer segments into **5 clusters** instead of **4** stems from the desire for a more nuanced understanding of customer behavior. Here are the key insights supporting this choice:
+- **Tailored Marketing Approaches**: The fifth cluster helps refine marketing strategies for different groups. For example, by differentiating between rare and beginner purchasers, we can design specific campaigns that resonate with each type of customer.
 
-1. **Diverse Spending Behavior**: The additional cluster allows for a clearer distinction between **Medium Tickets** and **Beginners**. Without this separation, valuable insights about customers who are moderately active and those who are just starting could be lost.
+- **Actionable Insights**: With five clusters, we gain a deeper understanding of customer behaviors, like distinguishing between high and medium ticket spenders, enabling better promotions and loyalty programs for each segment.
 
-2. **Identification of Risk**: By creating a dedicated **Risk** category, we can better identify customers who have minimal engagement. This highlights the need for targeted strategies to re-engage these customers, which may not be as effective if they were grouped with more active segments.
-
-3. **Enhanced Marketing Strategies**: The extra cluster enables more tailored marketing approaches for each group. For example, understanding the specific needs of **Rare Purchasers** versus **Beginners** allows for customized campaigns that can improve customer retention and sales.
-
-4. **Actionable Insights**: More clusters lead to actionable insights. For example, distinguishing between **Big Tickets** and **Medium Tickets** helps in strategizing promotions and loyalty programs specifically aimed at high-value customers.
-
-5. **Data-Driven Decisions**: Finally, using five clusters is supported by the data characteristics and distributions observed in the analysis. It provides a more granular view of customer segments, aligning with best practices in customer segmentation methodologies.
+- **Data-Driven Approach**: The choice of five clusters is grounded in the data, which shows clear distinctions that align with best practices in segmentation.
 
 ### Cluster Behavioral Profiling and Strategic Recommendations
 
-By defining five distinct clusters, we gain a detailed view of customer behaviors, enabling targeted marketing strategies for each segment.
+By defining five distinct clusters, we can deploy highly tailored marketing strategies. Below are the details of each cluster's characteristics and the recommended actions.
 
----
+#### Key Characteristics and Targeted Marketing Strategies
 
-### Key Characteristics and Targeted Marketing Strategies
+1. **Big Tickets**
+   - **Characteristics**: These customers demonstrate high spending and frequent purchases, indicating loyalty and significant value to the brand.
+   - **Relevant KM5 Features**: PURCHASES, PURCHASES_FREQUENCY, and CREDIT_LIMIT are elevated.
+   - **Marketing Strategy**:
+     - **Loyalty Programs**: Offer exclusive rewards to enhance customer retention.
+     - **Cross-Selling**: Introduce related high-ticket items to further boost sales.
+     - **Special Offers**: Give access to premium promotions or limited-time offers.
 
-#### **1. Big Tickets**
-- **Characteristics**: Customers in this group show high purchase frequency and substantial spending, indicating a loyal and high-value customer base.
-- **Relevant KM5 Features**: High values in **PURCHASES**, **PURCHASES_FREQUENCY**, and **CREDIT_LIMIT**.
+2. **Big Spenders**
+   - **Characteristics**: Customers in this group spend at high levels but don't always engage frequently.
+   - **Relevant KM5 Features**: High BALANCE, PURCHASES.
+   - **Marketing Strategy**:
+     - **Personalized Discounts**: Provide tailored deals based on their purchase history.
+     - **Exclusive Services**: Offer services like premium delivery or customized products.
 
-- **Marketing Strategy**: 
-  - **Loyalty Programs**: Implement exclusive rewards or tiered loyalty programs to encourage further engagement.
-  - **Personalized Recommendations**: Offer premium products or tailored bundles, as this group is likely to respond to high-value offerings.
-  - **VIP Experiences**: Consider VIP access or early product releases to solidify brand loyalty among these high-value customers.
+3. **Beginners**
+   - **Characteristics**: New customers with a medium level of purchases.
+   - **Relevant KM5 Features**: Low PURCHASES frequency, moderate CREDIT_LIMIT.
+   - **Marketing Strategy**:
+     - **Onboarding Campaigns**: Educate on products and services, showcasing value.
+     - **Nurturing Campaigns**: Use email and notifications to gradually increase engagement.
 
----
+4. **Rare Purchasers**
+   - **Characteristics**: Low spending and occasional purchases, possibly disengaged or inactive customers.
+   - **Relevant KM5 Features**: High BALANCE_FREQUENCY, PURCHASES_FREQUENCY but low PURCHASES.
+   - **Marketing Strategy**:
+     - **Reactivation**: Send targeted promotions to encourage return purchases.
+     - **Retention Offers**: Offer discounts or limited-time products to boost frequency.
 
-#### **2. Medium Tickets**
-- **Characteristics**: Moderate spenders with a tendency toward installment purchases; these customers frequently engage but at lower amounts than Big Tickets.
-- **Relevant KM5 Features**: Moderate to high values in **INSTALLMENTS_PURCHASES** and **PURCHASES_FREQUENCY**.
-
-- **Marketing Strategy**: 
-  - **Installment-Based Discounts**: Offer installment purchase options with reduced interest or extra benefits to appeal to their purchase patterns.
-  - **Flexible Payment Plans**: Encourage higher spending through limited-time, flexible payment options that increase accessibility.
-  - **Engagement Campaigns**: Run frequent, small-scale promotions to maintain regular engagement and increase purchase frequency.
-
----
-
-#### **3. Rare Purchasers**
-- **Characteristics**: Tend to make infrequent but high-value one-off purchases, reflecting a selective but valuable spending behavior.
-- **Relevant KM5 Features**: High values in **ONEOFF_PURCHASES** and low purchase frequency overall.
-
-- **Marketing Strategy**: 
-  - **Seasonal Promotions**: Use timed sales events to entice these customers to purchase.
-  - **Exclusive Product Launches**: Highlight one-off, high-value items or limited-edition products that align with their selective purchasing style.
-  - **Reminders and Re-Engagement**: Utilize targeted reminders, such as abandoned cart emails or "missed you" messages, to prompt renewed interaction.
-
----
-
-#### **4. Beginners**
-- **Characteristics**: Show low to moderate engagement, suggesting they are new customers or in the early stages of brand loyalty.
-- **Relevant KM5 Features**: Low values across most metrics, with possible moderate engagement in **CASH_ADVANCE** or minimal purchases.
-
-- **Marketing Strategy**: 
-  - **Onboarding Campaigns**: Provide onboarding incentives, such as welcome discounts, to help convert them into regular customers.
-  - **Educational Content**: Share product benefits, reviews, or usage tips to build familiarity and trust with the brand.
-  - **Encourage First-Time Purchases**: Offer discounts on first-time purchases to encourage further engagement and solidify their customer journey.
-
----
-
-#### **5. Risk**
-- **Characteristics**: Very low purchasing frequency and low amounts, with minimal engagement across purchase metrics.
-- **Relevant KM5 Features**: Low values across **PURCHASES**, **PURCHASES_FREQUENCY**, **CASH_ADVANCE**, etc.
-
-- **Marketing Strategy**: 
-  - **Re-Engagement Campaigns**: Use targeted ads or personalized emails with enticing offers to draw these customers back.
-  - **Dormancy Incentives**: Provide substantial discounts or perks to encourage reactivation.
-  - **Feedback Collection**: Gather insights on why they’re disengaged, which can guide adjustments in product or service offerings.
+5. **Risk Customers**
+   - **Characteristics**: Customers with minimal purchases and low engagement, showing high potential for churn.
+   - **Relevant KM5 Features**: BALANCE, MINIMUM_PAYMENTS, and CASH_ADVANCE are low.
+   - **Marketing Strategy**:
+     - **Engagement Campaigns**: Focus on educational content to engage this segment.
+     - **Incentives**: Offer incentives to boost their interest and reduce churn risk.
 
 ---
 
